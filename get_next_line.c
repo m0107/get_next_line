@@ -61,13 +61,13 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 int		checkerror(int fd, char **str, char **line)
 {
-	if (fd == -1 || line == NULL || !fd)
+	if (fd == -1 || line == NULL || fd > 10 || BUFFER_SIZE<1)
 	{
 		return (-1);
 	}
 	if (!*str)
 	{
-		if (!(*str = (char*)malloc(sizeof(char) * (BUFF_SIZE + 1))))
+		if (!(*str = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1))))
 			return (-1);
 	}
 	return (0);
@@ -89,23 +89,24 @@ int check_newl(char *str)
 
 char	*readline(char *str, int fd, int *i)
 {
-	char	buff[BUFF_SIZE + 1];
+	char	buff[BUFFER_SIZE + 1];
 	int		ret;
 	char	*temp;	
 
-	ret = read(fd, buff, BUFF_SIZE);
+	ret = read(fd, buff, BUFFER_SIZE);
 	{
 		buff[ret] = '\0';
 		str = ft_strjoin(str, buff);
-	//	printf("\tBuff:|%s| and str:|%s| and ret |%d|\n", buff, str,ret);
+//		printf("\tBuff:|%s| and str:|%s| and ret |%d|\n", buff, str,ret);
 	}
-	if(ret == 0)
+	
+	if (check_newl(str))
+		return (str);
+	else if(ret == 0)
 	{
-		*i = 1;
+		*i = 0;
 		return(str);
 	}
-	else if (check_newl(str))
-		return (str);
 	else
 	{
 		temp = str;
@@ -119,51 +120,41 @@ int		get_next_line(int const fd, char **line)
 {
 	static char	*str;
 	int			i;
+	int ret;
 	if (checkerror(fd, &str, line) == -1)
 		return (-1);
 	i = 0;
-	str = readline(str, fd, &i);
+	ret = 1;
+	str = readline(str, fd, &ret);
+/*	printf("Debug-----------Start----------------\n");
+	printf("Value of S: #%s#\n",str);
+	printf("Debug*********************************\n");
+*/	while (str[i] != '\n' && str[i])
+		i++;
 	if (i == 0)
-	{
-		while (str[i] != '\n' && str[i])
-			i++;
-		if (i == 0)
-		{
-//			printf("-----------------------------------");
-			(*line) = strdup("");
-			free(str);
-			str = NULL;
-		}
-		else
-		{
-			//if(**line)
-			//	free(line);
-			(*line) = ft_strsub(str, 0, i);
-			str = &str[i + 1];
-		}
-		return (1);
-	}
-	else
 		(*line) = strdup("");
-	return (0);
+	else
+		(*line) = ft_strsub(str, 0, i);
+	str = &str[i + 1];
+	//printf("value of ret: %d", ret);
+	return (ret);
 }
+/*
+int main()
+{
+	int             fd;
+	int             i;
+	int             j;
+	char    		*line = 0;
 
-int main() 
-{ 
-	char *line;
-	int i;
-	int j =1;
-	int fd = open("./t.txt", O_RDONLY); 
-	char			*lineadress[66];
+	if (!(fd = open("./t.txt", O_RDONLY)))
+	{
+		printf("Error in open\n");
+		return (0);
+	}
 	while ((i = get_next_line(fd, &line)) > 0)
 	{
-		printf("%s\n",line);
-		printf("line no: %d\n", j);
-		lineadress[j - 1] = line;
-		j++;
+		printf("|%s|\n", line);
 	}
-		printf("%s\n",line);
-	printf("\t\tline no: %d\n", j);
-	printf("%s",line);
-	close(fd);
-}
+	printf("|%s|\n", line);
+}*/
