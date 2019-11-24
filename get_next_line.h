@@ -17,11 +17,13 @@
 # define BUFFER_SIZE 10
 #endif
 
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <string.h>
+# include <limits.h>
 
 int		get_next_line(int fd, char **line);
 char	*ft_strsub(char const *s, unsigned int start, size_t len);

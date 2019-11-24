@@ -12,7 +12,7 @@
 
 #include "get_next_line.h"
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char  *s1, char const *s2)
 {
 	char	*ans;
 	int		len;
@@ -30,7 +30,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 int		checkerror(int fd, char **str, char **line)
 {
-	if (fd <= -1 || line == NULL || fd > 10 || BUFFER_SIZE < 1)
+	if (fd <= -1 || line == NULL || fd > OPEN_MAX || BUFFER_SIZE < 1)
 	{
 		return (-1);
 	}
@@ -60,10 +60,10 @@ char	*readline(char *str, int fd, int *i)
 	char	*temp;
 
 	ret = read(fd, buff, BUFFER_SIZE);
-	{
-		buff[ret] = '\0';
-		str = ft_strjoin(str, buff);
-	}
+	buff[ret] = '\0';
+	temp = str;
+	str = ft_strjoin(temp, buff);
+	free(temp);
 	if (check_newl(str))
 		return (str);
 	else if (ret == 0)
@@ -73,9 +73,7 @@ char	*readline(char *str, int fd, int *i)
 	}
 	else
 	{
-		temp = str;
 		str = readline(str, fd, i);
-		free(temp);
 	}
 	return (str);
 }
@@ -85,6 +83,7 @@ int		get_next_line(int const fd, char **line)
 	static char	*str;
 	int			i;
 	int			ret;
+	char 		*temp;
 
 	if (checkerror(fd, &str, line) == -1)
 		return (-1);
@@ -97,7 +96,12 @@ int		get_next_line(int const fd, char **line)
 		(*line) = ft_strdup("");
 	else
 		(*line) = ft_strsub(str, 0, i);
-	str = &str[i + 1];
+	temp = str;
+	str = ft_strsub(temp,i+1,ft_strlen(temp)-i);
+	free(temp);
+//	str = &str[i + 1];
+	if(ret == 0  && !check_newl(str))
+		free(str);
 	return (ret);
 }
 /*
@@ -105,7 +109,6 @@ int main()
 {
 	int             fd;
 	int             i;
-	int             j;
 	char    		*line = 0;
 
 	if (!(fd = open("./t.txt", O_RDWR | O_CREAT)))
@@ -116,6 +119,10 @@ int main()
 	while ((i = get_next_line(fd, &line)) > 0)
 	{
 		printf("%s\n", line);
+		free(line);
 	}
-	printf("%s\n", line);
-}*/
+	printf("%s", line);
+	free(line);
+}
+
+*/
