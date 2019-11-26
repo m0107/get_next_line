@@ -30,13 +30,14 @@ char	*ft_strjoin(char *s1, char const *s2)
 
 int		checkerror(int fd, char **str, char **line)
 {
-	if (fd <= -1 || line == NULL || fd > OPEN_MAX || BUFFER_SIZE < 1)
+	if (fd < 0 || line == NULL
+	|| fd > OPEN_MAX || read(fd, *str, 0) == -1 || BUFFER_SIZE < 1)
 	{
 		return (-1);
 	}
 	if (!*str)
 	{
-		if (!(*str = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1))))
+		if (!(*str = ft_strdup("")))
 			return (-1);
 	}
 	return (0);
@@ -59,14 +60,15 @@ char	*readline(char *str, int fd, int *i)
 	int		ret;
 	char	*temp;
 
+	if (check_newl(str))
+		return (str);
 	ret = read(fd, buff, BUFFER_SIZE);
 	buff[ret] = '\0';
 	temp = str;
 	str = ft_strjoin(temp, buff);
 	free(temp);
-	if (check_newl(str))
-		return (str);
-	else if (ret == 0)
+	temp = NULL;
+	if (ret == 0)
 	{
 		*i = 0;
 		return (str);
@@ -92,14 +94,15 @@ int		get_next_line(int const fd, char **line)
 	str = readline(str, fd, &ret);
 	while (str[i] != '\n' && str[i])
 		i++;
-	if (i == 0)
-		(*line) = ft_strdup("");
-	else
-		(*line) = ft_strsub(str, 0, i);
+	*line = (i == 0) ? ft_strdup("") : ft_strsub(str, 0, i);
 	temp = str;
 	str = ft_strsub(temp, i + 1, ft_strlen(temp) - i);
 	free(temp);
+	temp = NULL;
 	if (ret == 0 && !check_newl(str))
+	{
 		free(str);
+		str = NULL;
+	}
 	return (ret);
 }
